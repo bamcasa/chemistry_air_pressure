@@ -16,26 +16,44 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-screen_size = [600, 600]
 
+def init(n1, T1, v1):
+    global T
+    global n
+    global lab_size
+    global particles
+    T = T1
+    n = n1
+    lab_size = (v1, v1)
+
+    particles = np.zeros((n, 3))  # y, x, angle
+    # print(particles[1])
+    for i in range(len(particles)):
+        particles[i][0] = random.randint(50, 550)
+        particles[i][1] = random.randint(50, 550)
+        particles[i][2] = random.randint(0, 360)
+
+
+lab_size = [600, 600]
+n = 100
+T = 273
+particles = np.array([0])
+init(100, 273, 400)
+
+screen_size = [600, 600]
 screen = pygame.display.set_mode((screen_size[0], screen_size[1] + 100))
 pygame.font.init()
 font = pygame.font.SysFont(None, 30)
 
-n = 100
-T = 273
-particles = np.zeros((n, 3))  # y, x, angle
-# print(particles[1])
-for i in range(len(particles)):
-    particles[i][0] = random.randint(50, 550)
-    particles[i][1] = random.randint(50, 550)
-    particles[i][2] = random.randint(0, 360)
+
+
+
 
 # print(particles)
 
 crashed_times = 0
 # ---------------- input box
-user_text = '273'
+user_text = str(T)
 input_rect = pygame.Rect(400, 660, 140, 32)
 color_active = pygame.Color('lightskyblue3')
 color_passive = pygame.Color('chartreuse4')
@@ -95,18 +113,18 @@ def move_particles(v):
         if is_crash(particles[i][0], particles[i][1]):
             particles[i][2] += 90
         if is_out(particles[i][0], particles[i][1]):
-            particles[i][0] = random.randint(50, screen_size[0] - 50)
-            particles[i][1] = random.randint(50, screen_size[1] - 50)
+            particles[i][0] = random.randint(1, lab_size[0] - 1)
+            particles[i][1] = random.randint(1, lab_size[1] - 1)
 
 
 def is_crash(y, x):
     global crashed_times
     result = False
-    if y >= screen_size[0]:  # 아래쪽 부딪힘
+    if y >= lab_size[0]:  # 아래쪽 부딪힘
         result = True
     if y <= 0:  # 위쪽 부딪힘
         result = True
-    if x >= screen_size[1]:  # 오른쪽 부딪힘
+    if x >= lab_size[1]:  # 오른쪽 부딪힘
         result = True
     if x <= 0:  # 왼쪽 부딪힘
         result = True
@@ -117,15 +135,16 @@ def is_crash(y, x):
 
 
 def is_out(y, x):
-    middle_x = screen_size[0] / 2
-    middle_y = screen_size[1] / 2
-    # print(math.sqrt(2) * screen_size[0])
-    # print(round(pow(pow(middle_x - x, 2) + pow(middle_y - y, 2), 1 / 2)))
-    if pow(pow(middle_x - x, 2) + pow(middle_y - y, 2), 1 / 2) > math.sqrt(2) * screen_size[0] - 1:
-        print("바깥으로 나감")
-        return True
-    else:
-        return False
+    result = False
+    if y >= lab_size[0] + v:  # 아래쪽 부딪힘
+        result = True
+    if y < 0 - v:  # 위쪽 부딪힘
+        result = True
+    if x > lab_size[1] + v:  # 오른쪽 부딪힘
+        result = True
+    if x < 0 - v:  # 왼쪽 부딪힘
+        result = True
+    return result
 
 
 start_t = time.time()
@@ -134,7 +153,9 @@ while True:
     clock = pygame.time.Clock()
     clock.tick(FPS)
 
-    move_particles(10 * (T * 1.38 * pow(10, -3) * 2))
+    v = 10 * (T * 1.38 * pow(10, -3) * 2)
+
+    move_particles(v)
     draw_screen()
     show_data()
     show_input_box()
